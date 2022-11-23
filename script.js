@@ -167,8 +167,6 @@ document.body.addEventListener("mouseout", function (e) {
 loadingModelPromise.then(() => {
     console.log("Successfully loaded model.");
 
-    hiddenCanvasCtx.save();
-
     $(".lds-ring").hide();
 
     $("#clear").click(() => {
