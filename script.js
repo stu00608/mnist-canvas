@@ -1,16 +1,20 @@
 const CANVAS_SIZE = 280;
-const CANVAS_SCALE = 0.5;
+const CANVAS_SCALE = 0.1;
+const INFERENCE_SIZE = 28;
 
+let options = { willReadFrequently: true };
 const canvas = document.getElementById("canvas");
+const hiddenCanvas = document.getElementById("hiddenCanvas");
 const loading = document.getElementById("loading");
-const ctx = canvas.getContext("2d", { willReadFrequently: true });
+const ctx = canvas.getContext("2d", options);
+const hiddenCanvasCtx = hiddenCanvas.getContext("2d", options);
 const rect = canvas.getBoundingClientRect();
+hiddenCanvasCtx.scale(CANVAS_SCALE, CANVAS_SCALE);
 
-ctx.lineWidth = 10;
+ctx.lineWidth = 15;
 ctx.lineCap = 'round'
 ctx.lineJoin = "round";
-ctx.font = "28px sans-serif";
-ctx.fillStyle = "#212121";
+ctx.strokeStyle = "#000000"
 
 const hasTouchEvent = 'ontouchstart' in window ? true : false;
 
@@ -21,17 +25,27 @@ let x2 = 0;
 let y2 = 0;
 
 const sess = new onnx.InferenceSession();
-const loadingModelPromise = sess.loadModel("onnx_model.onnx");
+const loadingModelPromise = sess.loadModel("mnist/onnx_model_preprocess_in_js.onnx");
 
 async function updatePredictions() {
     // Get the predictions for the canvas data.
-    const imgData = ctx.getImageData(0, 0, CANVAS_SIZE, CANVAS_SIZE);
-    const input = new onnx.Tensor(new Float32Array(imgData.data), "float32");
+
+    hiddenCanvasCtx.drawImage(canvas, 0, 0);
+    const hiddenImgData = hiddenCanvasCtx.getImageData(0, 0, INFERENCE_SIZE, INFERENCE_SIZE);
+    var data = hiddenImgData.data;
+    var gray_data = [];
+
+    for (var i = 3; i < data.length; i += 4) {
+        pix = data[i] / 255;
+        pix = (pix - 0.1307) / 0.3081
+        gray_data.push(pix);
+    }
+
+    const input = new onnx.Tensor(new Float32Array(gray_data), "float32", [1, 1, INFERENCE_SIZE, INFERENCE_SIZE]);
 
     const outputMap = await sess.run([input]);
     const outputTensor = outputMap.values().next().value;
-    // const predictions = softmax(outputTensor.data);
-    const predictions = outputTensor.data;
+    const predictions = softmax(outputTensor.data);
     const maxPrediction = Math.max(...predictions);
     const predictLabel = predictions.findIndex((n) => n == maxPrediction);
 
@@ -55,12 +69,21 @@ async function updatePredictions() {
     // }
     // console.log(`Prediction = ${predictions.indexOf(maxPrediction)}`)
     // console.log("------------------------")
+    // ctx.scale(1.0, 1.0);
+}
+
+function softmax(arr) {
+    return arr.map(function (value, index) {
+        return Math.exp(value) / arr.map(function (y /*value*/) { return Math.exp(y) }).reduce(function (a, b) { return a + b })
+    })
 }
 
 function clearArea() {
     // Use the identity matrix while clearing the canvas
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    hiddenCanvasCtx.setTransform(CANVAS_SCALE, 0, 0, CANVAS_SCALE, 0, 0);
+    hiddenCanvasCtx.clearRect(0, 0, hiddenCanvasCtx.canvas.width / CANVAS_SCALE, hiddenCanvasCtx.canvas.height / CANVAS_SCALE);
 }
 
 function clearBar() {
@@ -143,6 +166,8 @@ document.body.addEventListener("mouseout", function (e) {
 
 loadingModelPromise.then(() => {
     console.log("Successfully loaded model.");
+
+    hiddenCanvasCtx.save();
 
     $(".lds-ring").hide();
 
