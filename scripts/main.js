@@ -11,7 +11,7 @@ const hiddenCanvasCtx = hiddenCanvas.getContext("2d", options);
 const rect = canvas.getBoundingClientRect();
 hiddenCanvasCtx.scale(CANVAS_SCALE, CANVAS_SCALE);
 
-ctx.lineWidth = 18;
+ctx.lineWidth = 15;
 ctx.lineCap = 'round'
 ctx.lineJoin = "round";
 ctx.strokeStyle = "#000000"
