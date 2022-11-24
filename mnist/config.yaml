@@ -1,0 +1,5 @@
+data_path: "data"
+ckpt_path: "ckpt"
+seed: 1520
+batch_size: 128
+epochs: 20

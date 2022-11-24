@@ -11,7 +11,7 @@ const hiddenCanvasCtx = hiddenCanvas.getContext("2d", options);
 const rect = canvas.getBoundingClientRect();
 hiddenCanvasCtx.scale(CANVAS_SCALE, CANVAS_SCALE);
 
-ctx.lineWidth = 15;
+ctx.lineWidth = 18;
 ctx.lineCap = 'round'
 ctx.lineJoin = "round";
 ctx.strokeStyle = "#000000"
@@ -25,7 +25,7 @@ let x2 = 0;
 let y2 = 0;
 
 const sess = new onnx.InferenceSession();
-const loadingModelPromise = sess.loadModel("onnx_model.onnx");
+const loadingModelPromise = sess.loadModel("mnist/onnx_model.onnx");
 
 async function updatePredictions() {
     // Get the predictions for the canvas data.
