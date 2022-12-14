@@ -8,6 +8,19 @@
 - Need pytorch, PyYAML, tqdm to run scripts in this folder.
 
 ```
+conda create -n <env_name> python=3.8
+conda activate <env_name>
+```
+
+```
+# According to https://pytorch.org/get-started/previous-versions/#v180
+conda install pytorch==1.8.0 torchvision==0.9.0 cudatoolkit=11.1 -c pytorch -c conda-forge
+
+# Or cpu only
+conda install pytorch==1.8.0 torchvision==0.9.0 cpuonly -c pytorch
+```
+
+```
 pip install -r requirements.txt
 ```
 
